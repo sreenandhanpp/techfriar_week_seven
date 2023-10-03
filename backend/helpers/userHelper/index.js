@@ -13,42 +13,57 @@ const userMailOtpSchema = require('../../MongoDb/models/userModels/mailOtp.js');
 dotenv.config();
 
 module.exports = {
-    //user signup
+
+    // Function to handle user registration
     doSignup: (userData) => {
         return new Promise(async (resolve, reject) => {
-            //creating user object using user Model
+            // Hash the user's password using bcrypt with a salt factor of 10
+            userData.password = await bcrypt.hash(userData.password, 10);
+
+            // Create a new user document with the provided user data
             const user = new newUser({
                 name: userData.name,
-                email: userData.email,
-                dob: userData.dob,
-                aadhar: userData.aadhar,
+                address: {
+                    pincode: userData.pincode,
+                    country: userData.country,
+                    city: userData.city,
+                    state: userData.state,
+                },
                 verified: false,
-                phone: userData.phone
+                password: userData.password
             });
-            //save the user collection using SAVE method,if success resolve the inserted data or reject with error msg
-            user.save(user).then((data) => {
-                const userData = {
-                    id: data._id,
-                    name: data.name,
-                    email: data.email,
-                    dob: data.dob,
-                    aadhar: data.aadhar,
-                    verified: data.verified,
-                    phone: data.phone
-                };
-                resolve(userData);
+
+            // Save the user document to the database
+            user.save(user).then((userData) => {
+                // Prepare the registration data to be resolved
+                const data = {
+                    name: userData.name,
+                    address: {
+                        pincode: userData.pincode,
+                        country: userData.country,
+                        city: userData.city,
+                        state: userData.state,
+                    },
+                    verified: false,
+                }
+
+                // Resolve with the registration data
+                resolve(data);
             }).catch(err => {
+                // Reject with any error that occurred during user registration
                 reject(err);
             });
         });
     },
-    //sending email verification otp using nodemailer 
+
+    // Function to send an OTP verification email to a user's email address
     sendOtpVerificationEmail: ({ id, email }) => {
         return new Promise(async (resolve, reject) => {
             try {
+                // Generate a random OTP
                 const otp = await generateOtp();
 
-                //creating mail template and conifiguring sender and reciever details
+                // Define the email content and options
                 const mailOptions = {
                     from: "sreenandhanpp@gmail.com",
                     to: email,
@@ -57,7 +72,8 @@ module.exports = {
                             email address and complete the signup process</p>
                             <p>This code <b>expires in 1 hour</b>.</p>`
                 };
-                //creating transporter 
+
+                // Create a transporter for sending emails using nodemailer
                 const transporter = nodemailer.createTransport({
                     service: 'gmail',
                     auth: {
@@ -65,62 +81,84 @@ module.exports = {
                         pass: process.env.USER_PASS
                     }
                 });
+
+                // Hash the OTP for storage
                 const hashedOtp = await bcrypt.hash(otp, 10);
+
+                // Create a record of the OTP in the database
                 const userOtp = new userMailOtpSchema({
                     userId: id,
                     otp: hashedOtp,
                     createdAt: Date.now(),
                     expiresAt: Date.now() + 3600000
                 });
+
+                // Save the OTP record to the database
                 await userOtp.save();
+
+                // Send the OTP verification email
                 await transporter.sendMail(mailOptions);
-                const data = {
-                    isEmailVerified: true
-                }
+
+                // Resolve with a success message
                 resolve("Otp sended successfully");
             } catch (error) {
+                // Reject with an error message if something goes wrong
                 reject("Something went wrong,Request another OTP");
             }
         })
     },
-    /*takes user id and otp as argument search the user in phone-otp collection,
-        -->if user not found reject : user not found
-        -->else check otp is valid or not 
-        -->if not valid reject : Code has expired. Please request again
-        -->else compare the otps
-        -->if otp not matching reject : Invalid code please check your inbox
-        -->else resolve : Account verified successfully.
-    */
-    VerifyEmailOtp: ({ id, otp }) => {
+
+    // Function to verify an email OTP and update the user's email if successful
+    VerifyEmailOtp: ({ id, otp, email }) => {
         return new Promise(async (resolve, reject) => {
+            // Find the user's OTP record in the database based on the user ID
             const user = await userMailOtpSchema.findOne({ userId: new ObjectId(id) });
+
+            // If the user record is not found, reject with an error message
             if (!user) {
                 reject("User not found");
             } else {
                 const { expiresAt } = user.expiresAt;
                 const hashedOtp = user.otp;
+
+                // Check if the OTP has expired
                 if (expiresAt < Date.now()) {
+
+                    // If expired, delete the OTP record and reject with an error message
                     await userMailOtpSchema.deleteOne({ userId: new ObjectId(id) });
                     reject("Code has expired. Please request again");
                 } else {
+                    // Compare the provided OTP with the hashed OTP in the database
                     const validOtp = await bcrypt.compare(otp, hashedOtp);
+
+                    // If the OTP is invalid, reject with an error message
                     if (!validOtp) {
                         reject("Invalid code please check your inbox");
                     } else {
+                        // If the OTP is valid, delete the OTP record and update the user's email
                         await userMailOtpSchema.deleteOne({ userId: new ObjectId(id) });
-                        resolve("Email verified successfully.");
+                        await newUser.updateOne({ _id: new ObjectId(id) }, {
+                            $set: {
+                                email: email
+                            }
+                        });
+
+                        // Resolve with the updated email
+                        resolve(email);
                     }
                 }
             }
         })
     },
-    //sending phone verification otp using springEdge 
+
+    // Function to send an OTP to a phone number for verification
     sendPhoneOtpVerification: ({ id, phone }) => {
         return new Promise(async (resolve, reject) => {
             try {
+                // Generate a random OTP
                 const otp = await generateOtp();
 
-                //sending sms uing springedge
+                // Configure parameters for sending SMS using the Spring Edge API
                 var params = {
                     'apikey': process.env.SPRING_EDGE_API_KEY, // API Key
                     'sender': 'SEDEMO', // Sender Name
@@ -131,57 +169,80 @@ module.exports = {
                     'format': 'json'
                 };
 
+                // Send the SMS message using Spring Edge API
                 await springedge.messages.send(params, 5000, function (err, response) {
                     if (err) {
+                        // If there's an error sending the SMS, throw an error
                         throw "something went wrong, Can't send otp right now"
                     }
                 });
 
+                // Hash the OTP for storage
                 const hashedOtp = await bcrypt.hash(otp, 10);
+
+                // Create a record of the OTP in the database
                 const userOtp = new userPhoneOtpSchema({
                     userId: id,
                     otp: hashedOtp,
                     createdAt: Date.now(),
                     expiresAt: Date.now() + 3600000
                 });
+
+                // Save the OTP record to the database
                 const res = await userOtp.save();
+
+                // Resolve with a success message
                 resolve("Otp sended successfully");
             } catch (error) {
+                // Reject with an error message if something goes wrong
                 reject("Something went wrong,Request another OTP")
             }
         })
     },
-    /*takes user id and otp as argument search the user in phone-otp collection,
-        -->if user not found reject : user not found
-        -->else check otp is valid or not 
-        -->if not valid reject : Code has expired. Please request again
-        -->else compare the otps
-        -->if otp not matching reject : Invalid code please check your inbox
-        -->else resolve : Account verified successfully.
-    */
-    VerifyPhoneOtp: ({ id, otp }) => {
+
+    // Function to verify a phone number OTP and update the user's phone number if successful
+    VerifyPhoneOtp: ({ id, otp, phone }) => {
         return new Promise(async (resolve, reject) => {
+            // Find the user's OTP record in the database based on the user ID
             const user = await userPhoneOtpSchema.findOne({ userId: new ObjectId(id) });
+
+            // If the user record is not found, reject with an error message
             if (!user) {
                 reject("User not found");
             } else {
                 const { expiresAt } = user.expiresAt;
                 const hashedOtp = user.otp;
+
+                // Check if the OTP has expired
                 if (expiresAt < Date.now()) {
+                    // If expired, delete the OTP record and reject with an error message
                     await userPhoneOtpSchema.deleteOne({ userId: new ObjectId(id) });
                     reject("Code has expired. Please request again");
                 } else {
+                    // Compare the provided OTP with the hashed OTP in the database
                     validOtp = await bcrypt.compare(otp, hashedOtp);
+
+                    // If the OTP is invalid, reject with an error message
                     if (!validOtp) {
                         reject("Invalid code please check your inbox");
                     } else {
+                        // If the OTP is valid, delete the OTP record and update the user's phone number
                         await userPhoneOtpSchema.deleteOne({ userId: new ObjectId(id) });
-                        resolve("Phone number verified successfully.");
+                        await newUser.updateOne({ _id: new ObjectId(id) }, {
+                            $set: {
+                                phone: phone,
+                                verified: true
+                            }
+                        });
+
+                        // Resolve with the updated phone number
+                        resolve(phone);
                     }
                 }
             }
         })
     },
+
     //To find One user details,then resolve the data
     getUserDetails: ({ id }) => {
         return new Promise(async (resolve, reject) => {
@@ -194,7 +255,7 @@ module.exports = {
         })
     },
     //To find One user details,then resolve the data
-    updateUserDetails: ( { id,dob,name,email,aadhar,phone } ) => {
+    updateUserDetails: ({ id, dob, name, email, aadhar, phone }) => {
         return new Promise(async (resovle, reject) => {
             newUser.updateOne({ _id: new ObjectId(id) }, {
                 $set: {

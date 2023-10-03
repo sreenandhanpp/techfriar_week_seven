@@ -5,7 +5,9 @@ const bodyParser = require('body-parser');
 const connectDB = require('./MongoDb/connect.js');
 const cors = require('cors');
 const userRoute = require('./routes/userRoute.js');
-const userRoute = require('./routes/adminRoute.js');
+const adminRoute = require('./routes/adminRoute.js');
+const session = require('express-session');
+
 
 
 //compiling .env file
@@ -22,6 +24,12 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(session({
+    secret: "secret",
+    saveUninitialized: true,
+    resave: true
+}));
 
 app.use('/user/api',userRoute);
 app.use('/admin/api',adminRoute);
