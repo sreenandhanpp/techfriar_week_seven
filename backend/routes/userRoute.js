@@ -2,6 +2,7 @@ const userHelper = require('../helpers/userHelper');
 const { resendPhoneOtp, resendEmailOtp } = require('../helpers/userHelper/resendOtp');
 const signupValidator = require('../middlewares/signupValidator');
 const phoneValidator = require('../middlewares/phoneValidator');
+const loginValidator = require('../middlewares/loginValidator');
 const emailValidator = require('../middlewares/emailValidator');
 const { validationResult } = require('express-validator');
 const express = require('express');
@@ -124,6 +125,29 @@ router.post('/resend-phone-otp', (req, res) => {
         res.status(400).json({ message: err });
     })
 });
+
+// Handle POST request for user login
+router.post('/login', loginValidator, (req, res) => {
+    // Validate the request data using the loginValidator middleware
+    let err = validationResult(req);
+
+    // If there are validation errors in the request data
+    if (!err.isEmpty()) {
+        // Respond with a 400 (Bad Request) status and the validation error details
+        res.status(400).json({ errors: err.array() })
+    } else {
+        // Attempt to perform user login using userHelper's doLogin function
+        userHelper.doLogin(req.body).then((data) => {
+            // If login is successful, update the user session and respond with user data
+            req.session.user = data;
+            res.json(data).status(200);
+        }).catch(err => {
+            // Respond with a 400 (Bad Request) status and an error message for incorrect email or password
+            res.status(400).json({ error: err });
+        });
+    }
+});
+
 
 
 

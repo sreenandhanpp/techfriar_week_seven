@@ -272,6 +272,39 @@ module.exports = {
                 reject(err)
             })
         });
-    }
+    },
 
+    // Function to perform user login
+    doLogin: (userData) => {
+        return new Promise(async (resolve, reject) => {
+            // Find a user in the database with the provided email
+            const user = await newUser.findOne({ email: userData.email });
+
+            // If a user with the provided email is found
+            if (user) {
+                // Compare the provided password with the hashed password stored in the database
+                let status = await bcrypt.compare(userData.password, user.password);
+
+                // If the password matches
+                if (status) {
+                    // Prepare user data for response
+                    const data = {
+                        name: user.name,
+                        email: user.email,
+                        address: user.address,
+                        phone: user.phone
+                    };
+
+                    // Resolve with the user data
+                    resolve(data);
+                } else {
+                    // Reject with an error message for incorrect password
+                    reject("Incorrect email or password");
+                }
+            } else {
+                // Reject with an error message for incorrect email
+                reject("Incorrect email or password");
+            }
+        });
+    }
 }
