@@ -5,12 +5,9 @@ const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 const springedge = require('springedge');
-const dotenv = require('dotenv');
 const generateOtp = require('../../utils/generateOtp');
 const userMailOtpSchema = require('../../MongoDb/models/userModels/mailOtp.js');
 
-
-dotenv.config();
 
 module.exports = {
 

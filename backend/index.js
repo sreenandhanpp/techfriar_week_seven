@@ -7,6 +7,8 @@ const cors = require('cors');
 const userRoute = require('./routes/userRoute.js');
 const adminRoute = require('./routes/adminRoute.js');
 const session = require('express-session');
+const fileupload = require('express-fileupload');
+
 
 
 
@@ -25,14 +27,17 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.use(fileupload({ useTempFiles: true }))
+
+
 app.use(session({
     secret: "secret",
     saveUninitialized: true,
     resave: true
 }));
 
-app.use('/user/api',userRoute);
-app.use('/admin/api',adminRoute);
+app.use('/user/api', userRoute);
+app.use('/admin/api', adminRoute);
 
 
 //function to start the server
