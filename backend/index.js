@@ -6,6 +6,7 @@ const connectDB = require('./MongoDb/connect.js');
 const cors = require('cors');
 const userRoute = require('./routes/userRoute.js');
 const adminRoute = require('./routes/adminRoute.js');
+const commonRoute = require('./routes/commonRoute.js');
 const session = require('express-session');
 const fileupload = require('express-fileupload');
 
@@ -38,6 +39,7 @@ app.use(session({
 
 app.use('/user/api', userRoute);
 app.use('/admin/api', adminRoute);
+app.use('/common/api', userRoute);
 
 
 //function to start the server

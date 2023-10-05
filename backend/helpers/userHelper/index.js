@@ -303,5 +303,11 @@ module.exports = {
                 reject("Incorrect email or password");
             }
         });
+    },
+
+    addToCart: () => {
+        return new Promise(async (resolve, reject) => {
+            
+        })
     }
 }

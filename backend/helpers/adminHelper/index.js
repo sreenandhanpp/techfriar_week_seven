@@ -2,6 +2,7 @@ const Product = require("../../MongoDb/models/adminModels/Products");
 const cloudinary = require("../../utils/cloudinaryConfig");
 const { otps } = require("../../utils/cloudinaryCredential");
 const mongoose = require("mongoose");
+const deleteProductImage = require("./deleteProductImage");
 const ObjectId = mongoose.Types.ObjectId;
 
 
@@ -37,18 +38,78 @@ module.exports = {
         });
     },
 
-    // Function to delete a product from the database
+    // Function to delete a product from the database and associated images
     deleteProduct: (id) => {
         return new Promise(async (resolve, reject) => {
-            // Delete the product document from the database using the provided product ID
-            Product.deleteOne({ _id: new ObjectId(id) })
-                .then(res => {
-                    // Resolve with a success message if the product is deleted successfully
-                    resolve('Product deleted successfully');
+            try {
+                // Find and delete the product document from the database using the provided product ID
+                Product.findOneAndDelete({ _id: new ObjectId(id) })
+                    .then(deletedProduct => {
+                        if (!deletedProduct) {
+                            // If the product doesn't exist, reject with an error message
+                            reject('Product not found');
+                        } else {
+                            // Call a function to delete associated images
+                            deleteProductImage(deletedProduct.images)
+                                .then(() => {
+                                    // Resolve with a success message if the product and images are deleted successfully
+                                    resolve('Product deleted successfully');
+                                })
+                                .catch(err => {
+                                    // Reject with an error message if there's an issue with image deletion
+                                    reject(err);
+                                });
+                        }
+                    })
+                    .catch(err => {
+                        // Reject with an error message if there's an issue with product deletion
+                        reject('Something went wrong with product deletion');
+                    });
+            } catch (error) {
+                // Reject with a general error message if an exception occurs
+                reject('Something went wrong');
+            }
+        });
+    },
+
+    // Function to update an existing product in the database
+    updateProduct: (body, urls) => {
+        return new Promise(async (resolve, reject) => {
+            // Extract updated product information from the request body
+            const { id, name, description, quantity, price, model, manufacturer } = body;
+
+            // Find and update the product document in the database using the provided product ID
+            Product.findOneAndUpdate({ _id: ObjectId(id) }, {
+                $set: {
+                    name: name,
+                    description: description,
+                    price: price,
+                    quantity: quantity,
+                    images: urls,
+                    manufacturer: manufacturer,
+                    model: model
+                }
+            })
+                .then(updatedProduct => {
+                    if (!updatedProduct) {
+                        // If the product doesn't exist, reject with an error message
+                        reject('Product not found');
+                    } else {
+                        // Call a function to delete previous images associated with the product
+                        deleteProductImage(updatedProduct.images)
+                            .then(() => {
+                                // Resolve with a success message if the product is updated successfully
+                                resolve("Product updated successfully");
+                            })
+                            .catch(err => {
+                                // Reject with an error message if there's an issue with image deletion
+                                reject(err);
+                            });
+                    }
                 })
                 .catch(err => {
-                    // Reject with an error message if there's an issue with product deletion
-                    reject('Something went wrong with product deletion');
+                    // Reject with an error message if there's an issue with product updating
+                    reject("Something went wrong with updating the product");
                 });
         });
     },
@@ -57,11 +118,14 @@ module.exports = {
     uploadProductImage: (file) => {
         return new Promise(async (resolve, reject) => {
             try {
+                let imgData = {}
                 // Use the Cloudinary uploader to upload the image from the provided temporary file path
                 cloudinary.uploader.upload(file.tempFilePath, otps, (error, result) => {
                     if (result && result.secure_url) {
+                        imgData.id = result.public_id,
+                            imgData.url = result.secure_url
                         // If the upload is successful, resolve with the secure URL of the uploaded image
-                        resolve(result.secure_url);
+                        resolve(imgData);
                     } else {
                         // If there's an error or the secure URL is not present, reject with an error message
                         reject("something went wrong on uploading images!!")
@@ -72,5 +136,8 @@ module.exports = {
                 reject(error)
             }
         })
-    }
+    },
+
+ 
+
 }

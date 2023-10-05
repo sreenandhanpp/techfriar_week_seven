@@ -17,7 +17,48 @@ const productSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    images: [ String ],
+    images: [ 
+        {
+            id:{
+                type: String,
+                required: true,
+            },
+            url:{
+                type:String,
+                required: true
+            }
+        },
+        {
+            id:{
+                type: String,
+                required: true,
+            },
+            url:{
+                type:String,
+                required: true
+            }
+        },
+        {
+            id:{
+                type: String,
+                required: true,
+            },
+            url:{
+                type:String,
+                required: true
+            }
+        },
+        {
+            id:{
+                type: String,
+                required: true,
+            },
+            url:{
+                type:String,
+                required: true
+            }
+        }
+     ],
     quantity: {
         type: Number,
         required: true,
