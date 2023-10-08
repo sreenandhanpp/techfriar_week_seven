@@ -7,6 +7,8 @@ const ObjectId = mongoose.Types.ObjectId;
 const springedge = require('springedge');
 const generateOtp = require('../../utils/generateOtp');
 const userMailOtpSchema = require('../../MongoDb/models/userModels/mailOtp.js');
+const BookingSchema = require('../../MongoDb/models/commonModels/Bookings');
+const Product = require('../../MongoDb/models/adminModels/Vehicle');
 
 
 module.exports = {
@@ -19,7 +21,9 @@ module.exports = {
 
             // Create a new user document with the provided user data
             const user = new newUser({
+                phone: userData.phone,
                 name: userData.name,
+                email: userData.email,
                 address: {
                     pincode: userData.pincode,
                     country: userData.country,
@@ -27,13 +31,17 @@ module.exports = {
                     state: userData.state,
                 },
                 verified: false,
-                password: userData.password
+                password: userData.password,
+                admin:false
             });
 
             // Save the user document to the database
             user.save(user).then((userData) => {
                 // Prepare the registration data to be resolved
                 const data = {
+                    phone: userData.phone,
+                    id: userData._id,
+                    email: userData.email,
                     name: userData.name,
                     address: {
                         pincode: userData.pincode,
@@ -42,6 +50,7 @@ module.exports = {
                         state: userData.state,
                     },
                     verified: false,
+                    admin:userData.admin
                 }
 
                 // Resolve with the registration data
@@ -106,7 +115,7 @@ module.exports = {
     },
 
     // Function to verify an email OTP and update the user's email if successful
-    VerifyEmailOtp: ({ id, otp, email }) => {
+    VerifyEmailOtp: ({ id, otp }) => {
         return new Promise(async (resolve, reject) => {
             // Find the user's OTP record in the database based on the user ID
             const user = await userMailOtpSchema.findOne({ userId: new ObjectId(id) });
@@ -134,14 +143,8 @@ module.exports = {
                     } else {
                         // If the OTP is valid, delete the OTP record and update the user's email
                         await userMailOtpSchema.deleteOne({ userId: new ObjectId(id) });
-                        await newUser.updateOne({ _id: new ObjectId(id) }, {
-                            $set: {
-                                email: email
-                            }
-                        });
-
                         // Resolve with the updated email
-                        resolve(email);
+                        resolve("Email verified successfully");
                     }
                 }
             }
@@ -198,7 +201,7 @@ module.exports = {
     },
 
     // Function to verify a phone number OTP and update the user's phone number if successful
-    VerifyPhoneOtp: ({ id, otp, phone }) => {
+    VerifyPhoneOtp: ({ id, otp }) => {
         return new Promise(async (resolve, reject) => {
             // Find the user's OTP record in the database based on the user ID
             const user = await userPhoneOtpSchema.findOne({ userId: new ObjectId(id) });
@@ -227,50 +230,17 @@ module.exports = {
                         await userPhoneOtpSchema.deleteOne({ userId: new ObjectId(id) });
                         await newUser.updateOne({ _id: new ObjectId(id) }, {
                             $set: {
-                                phone: phone,
                                 verified: true
                             }
                         });
-
                         // Resolve with the updated phone number
-                        resolve(phone);
+                        resolve("Phone number verified Successfully");
                     }
                 }
             }
         })
     },
-
-    //To find One user details,then resolve the data
-    getUserDetails: ({ id }) => {
-        return new Promise(async (resolve, reject) => {
-            //matching the user id with mongodb object id 
-            newUser.findOne({ _id: new ObjectId(id) }).lean().then((user) => {
-                resolve(user);
-            }).catch(err => {
-                reject(err);
-            })
-        })
-    },
-    //To find One user details,then resolve the data
-    updateUserDetails: ({ id, dob, name, email, aadhar, phone }) => {
-        return new Promise(async (resovle, reject) => {
-            newUser.updateOne({ _id: new ObjectId(id) }, {
-                $set: {
-                    dob: dob,
-                    aadhar: aadhar,
-                    phone: phone,
-                    name: name,
-                    email: email,
-                }
-            }).then((res) => {
-                console.log(res);
-                resovle(res);
-            }).catch(err => {
-                reject(err)
-            })
-        });
-    },
-
+   
     // Function to perform user login
     doLogin: (userData) => {
         return new Promise(async (resolve, reject) => {
@@ -286,6 +256,7 @@ module.exports = {
                 if (status) {
                     // Prepare user data for response
                     const data = {
+                        id: user._id,
                         name: user.name,
                         email: user.email,
                         address: user.address,
@@ -305,9 +276,45 @@ module.exports = {
         });
     },
 
-    addToCart: () => {
+    // Function to create booking details
+    createBookingDetails: ({ proId, userId }) => {
+        return new Promise(async (resolve, reject) => {
+            // Create a new Booking instance using the BookingSchema
+            const Booking = new BookingSchema({
+                userId: new ObjectId(userId), // Assign the user ID to the booking
+                vehicles: [{
+                    _id: new ObjectId(proId) // Assign the product ID to the booking
+                }],
+                payment_status: true // Set payment_status to true indicating successful payment
+            });
+
+            // Save the booking instance to the database
+            Booking.save(Booking).then(res => {
+                resolve("Vehicle booked successfully"); // Resolve with success message
+            }).catch(err => {
+                reject('something went wrong on booking'); // Reject with error message if there's an issue
+            });
+        });
+    },
+
+    getBookingDetails: ({ id }) => {
         return new Promise(async (resolve, reject) => {
             
+            const bookedProducts = await BookingSchema.findOne({ userId: new ObjectId(id)}).populate('vehicles').exec()
+            console.log(bookedProducts);
+        })
+    },
+    searchProducts: ({ key }) => {
+        return new Promise(async (resolve, reject) => {
+            const query = {
+                $or: [
+                    { name: "Product Name" },
+                    { model: "Product Model" },
+                    { manufacturer: "Manufacturer Name" }
+                ]
+            };
+            Product.find(query).toArray();
+            console.log(array);
         })
     }
 }

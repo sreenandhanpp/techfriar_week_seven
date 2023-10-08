@@ -1,11 +1,8 @@
 const userHelper = require('../helpers/userHelper');
 const { resendPhoneOtp, resendEmailOtp } = require('../helpers/userHelper/resendOtp');
-const signupValidator = require('../middlewares/signupValidator');
-const phoneValidator = require('../middlewares/phoneValidator');
-const loginValidator = require('../middlewares/loginValidator');
-const emailValidator = require('../middlewares/emailValidator');
 const { validationResult } = require('express-validator');
 const express = require('express');
+const commonHelper = require('../helpers/commonHelper');
 const router = express.Router();
 
 
@@ -24,7 +21,7 @@ router.get('/all-product', (req, res) => {
 });
 
 // Handle GET request to retrieve a specific product by ID
-router.get('/get-product', (req, res) => {
+router.post('/get-product', (req, res) => {
     // Call the getProduct function from commonHelper, passing the product ID from the request body
     commonHelper.getProduct(req.body.id)
         .then(product => {

@@ -1,0 +1,78 @@
+.product-head{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    padding-top: 100px;
+}
+
+.section__container {
+    max-width: var(--max-width);
+    margin: auto;
+    padding: 5rem 1rem;
+  }
+  
+  .musthave__nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+  
+  .musthave__nav a {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-light);
+    transition: 0.3s;
+  }
+  
+  .musthave__nav a:hover {
+    color: var(--text-dark);
+  }
+  
+  .musthave__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+  }
+  
+  .musthave__card {
+    width: 300px;
+    height: 400px;
+    display: grid;
+    gap: 0.5rem;
+    color: var(--text-dark);
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+  }
+  
+  .musthave__card h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    
+  }
+
+  .musthave__card img{
+    height: 200px;
+    width: 100%;
+  }
+  
+  .musthave__card p {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+  
+  .musthave__card p del {
+    font-weight: 400;
+    color: var(--text-light);
+  }
+
+  /* button css */
+
+
+.action-buttons{
+    height: 20px;
+}
+  

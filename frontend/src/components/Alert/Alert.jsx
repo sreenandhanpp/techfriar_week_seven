@@ -1,9 +1,14 @@
 import React from 'react'
 import './style.css'
 
-const Alert = ({ msg }) => {
+const Alert = ({ errors, label }) => {
   return (
-    <p className='alert'> {msg} </p>
+    errors &&
+    errors.map(value => {
+      if (value.path == label) {
+        return <div key={value.msg}><p className='alert'> *{value.msg} </p></div>
+      }
+    })
   )
 }
 

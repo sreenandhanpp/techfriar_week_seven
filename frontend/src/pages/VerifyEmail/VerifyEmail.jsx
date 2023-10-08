@@ -12,6 +12,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../components/Loader/Loader';
+import SendEmailOtp from '../SendEmailOtp/SendEmailOtp';
 
 const VerifyEmail = () => {
   const navigate = useNavigate('');
@@ -52,6 +53,7 @@ const VerifyEmail = () => {
     setMsg(text);
   }, []);
 
+
   /**
  * Validates the entered OTP (One-Time Password).
  * Checks if the OTP is a four-digit number and updates the message and color accordingly.
@@ -77,7 +79,7 @@ const VerifyEmail = () => {
       dispatch({ type: USER.VERIFY_OTP_REQUEST });
 
       // Send a POST request to the server to verify the email OTP  
-      axios.post(URL + '/verify-email-otp', {
+      axios.post(URL + '/user/api/verify-email-otp', {
         id: userData.id,
         otp: otps.digitOne + otps.digitTwo + otps.digitThree + otps.digitFour
       }).then(res => {
@@ -95,7 +97,7 @@ const VerifyEmail = () => {
         });
 
         // Navigate the user to the '/send-phone' route upon successful verification
-        navigate('/send-phone');
+        navigate('/verify-phone');
       }).catch(err => {
 
         // Dispatch an action to indicate a failed OTP verification
@@ -116,7 +118,7 @@ const VerifyEmail = () => {
     dispatch({ type: USER.RESEND_OTP_REQUEST });
 
     // Send a POST request to the server to resend the email OTP
-    axios.post(URL + '/resend-email-otp', {
+    axios.post(URL + '/user/api/resend-email-otp', {
       id: userData.id,
       email: userData.email
     }).then(res => {
@@ -128,7 +130,7 @@ const VerifyEmail = () => {
       setColor('green');
       setMsg(res.data.message);
     }).catch(err => {
-
+      console.log(err)
       // Dispatch an action to indicate a failed OTP resend
       dispatch({ type: USER.RESEND_OTP_FAILED, error: err.message });
 
@@ -140,16 +142,21 @@ const VerifyEmail = () => {
 
 
   return (
+
     loading || resendLoading ?
       <Loader />
       :
-      <Verfy
-        msg={msg}
-        color={color}
-        HandleResend={HandleResend}
-        HandleChange={HandleChange}
-        HandleVerify={HandleVerify}
-      />
+      userData.sendEmail ?
+        <Verfy
+          msg={msg}
+          color={color}
+          HandleResend={HandleResend}
+          HandleChange={HandleChange}
+          HandleVerify={HandleVerify}
+        />
+        :
+        <SendEmailOtp />
+
   )
 }
 

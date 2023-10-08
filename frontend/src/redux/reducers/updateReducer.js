@@ -12,7 +12,6 @@ export const updateReducer = (state = initialState,action) => {
         case USER.UPDATE_USER_REQUEST:
             return { ...state, loading:true}
         case USER.UPDATE_USER_SUCCESS:
-            setItem('user',action.payload)
             return { ...state,loading: false,data: action.payload }
         case USER.UPDATE_USER_FAILED:
             return { ...state,loading: false,error: action.payload }

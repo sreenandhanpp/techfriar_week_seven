@@ -44,6 +44,10 @@ const newUserSchema = new mongoose.Schema({
     verified: {
         type: Boolean,
         required: true
+    },
+    admin:{
+        type:Boolean,
+        required:true
     }
 });
 

@@ -39,10 +39,11 @@ const SendEmailOtp = () => {
             dispatch({ type: USER.SEND_OTP_REQUEST });
 
             // Send a POST request to the server to send an email OTP
-            axios.post(URL + '/send-email-otp', {
+            axios.post(URL + '/user/api/send-email-otp', {
                 id: userData.id,
                 email: userData.email
             }).then(res => {
+                console.log(res)
                 if (res.status == 200) {
                     // Display a success message to the user
                     toast.success(res.data.message, {
@@ -60,6 +61,7 @@ const SendEmailOtp = () => {
                     navigate('/verify-email');
                 }
             }).catch(err => {
+                console.log(err);
                 // Dispatch an action to indicate a failed email OTP send
                 dispatch({ type: USER.SEND_OTP_FAILED });
 

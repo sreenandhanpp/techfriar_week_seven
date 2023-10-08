@@ -1,4 +1,5 @@
 const { body } = require('express-validator');
+const newUser = require('../MongoDb/models/userModels/User');
 
 // Define an array of validation middleware functions using Express-validator
 module.exports = [
@@ -13,7 +14,7 @@ module.exports = [
   // Validate the 'pincode' field
   body('pincode')
     .notEmpty()
-    .withMessage('Pin code is required')
+    .withMessage('Pincode is required')
     .bail()
     .matches(/^\d{6}$/)
     .withMessage('Invalid Indian pin code format'),
@@ -29,7 +30,7 @@ module.exports = [
   // Validate the 'confirmPassword' field, ensuring it matches the 'password' field
   body('confirmPassword')
     .notEmpty()
-    .withMessage('Confirm password is required')
+    .withMessage('Confirm pass is required')
     .bail()
     .custom(async (value, { req }) => {
       const password = await Promise.resolve(req.body.password); // Resolve the Promise
@@ -65,4 +66,35 @@ module.exports = [
     .bail()
     .matches(/^[A-Za-z\s]+$/)
     .withMessage('Country must contain only letters and spaces')
+  ,
+
+  //validate the 'phone' field
+  body('phone')
+    .notEmpty()
+    .withMessage('Phone number is required')
+    .bail()
+    .matches(/^[6-9]\d{9}$/) // Specify the locale/region for IN phone numbers
+    .withMessage('Invalid phone number format')
+    .custom(async (value) => {
+      const user = await newUser.findOne({ phone: value });
+      if (user) {
+        throw new Error('Phone is already exists');
+      }
+      return true;
+    }),
+
+  //validate the 'email' field
+  body('email')
+    .notEmpty()
+    .withMessage('Email is required')
+    .bail()
+    .isEmail()
+    .withMessage('Invalid email address')
+    .custom(async (value) => {
+      const user = await newUser.findOne({ email: value });
+      if (user) {
+        throw new Error('Email already exists');
+      }
+      return true;
+    }),
 ];

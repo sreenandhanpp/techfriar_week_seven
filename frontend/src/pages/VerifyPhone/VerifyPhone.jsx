@@ -12,6 +12,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../components/Loader/Loader';
+import SendPhoneOtp from '../SendPhoneOtp/SendPhoneOtp';
 
 const VerifyPhone = () => {
   const [msg, setMsg] = useState('');
@@ -73,13 +74,14 @@ const VerifyPhone = () => {
       dispatch({ type: USER.VERIFY_OTP_REQUEST });
 
       // Send a POST request to the server to verify the email OTP  
-      axios.post(URL + '/verify-phone-otp', {
+      axios.post(URL + '/user/api/verify-phone-otp', {
         id: userData.id,
         otp: otps.digitOne + otps.digitTwo + otps.digitThree + otps.digitFour
       }).then(res => {
 
         //setting phoneVerified to true and update in localstorage for further validation
         userData.phoneVerified = true;
+        userData.verified = true;
         setItem('user', userData);
 
         // Dispatch an action to indicate a successful OTP verification
@@ -91,7 +93,7 @@ const VerifyPhone = () => {
         });
 
         // Navigate the user to the '/send-aadhar' route upon successful verification
-        navigate('/verify-aadhar');
+        navigate('/');
       }).catch(err => {
 
         // Dispatch an action to indicate a failed OTP verification
@@ -112,7 +114,7 @@ const VerifyPhone = () => {
     dispatch({ type: USER.RESEND_OTP_REQUEST });
 
     // Send a POST request to the server to resend the email OTP
-    axios.post(URL + '/resend-phone-otp', {
+    axios.post(URL + '/user/api/resend-phone-otp', {
       id: userData.id,
       phone: userData.phone
     }).then(res => {
@@ -139,6 +141,7 @@ const VerifyPhone = () => {
     loading || resendLoading ?
       <Loader />
       :
+      userData.sendPhone?
       <Verfy
         msg={msg}
         color={color}
@@ -146,6 +149,8 @@ const VerifyPhone = () => {
         HandleChange={HandleChange}
         HandleVerify={HandleVerify}
       />
+      :
+      <SendPhoneOtp />
   )
 }
 

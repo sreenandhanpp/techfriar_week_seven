@@ -1,7 +1,9 @@
 /* alert styles  */
 
-.alert{
-    font-size: 16px;
-    padding: 10px;
+.alert {
+    font-size: 11.4px;
+    font-weight: 600;
+    width: 100%;
+    padding-bottom: 0 ;
     color: red;
 }

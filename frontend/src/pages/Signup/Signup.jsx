@@ -1,198 +1,92 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
-import InuptField from '../../components/InuptField/InuptField';
 import { useNavigate } from "react-router-dom";
 import { URL } from '../../utils/url';
 import { USER } from '../../redux/constants/user';
 import './style.css';
 import Loader from '../../components/Loader/Loader';
 import { toast } from 'react-toastify';
+import Alert from '../../components/Alert/Alert';
 
 
 const Signup = () => {
-  const [errors, setErrors] = useState({
-    name: '',
-    email: '',
-    dob: '',
-    phone: '',
-    aadhar: ''
-  });
   const [formValues, setFormValues] = useState({
     name: '',
     email: '',
-    dob: '',
+    state: '',
     phone: '',
-    aadhar: ''
+    city: '',
+    country: '',
+    pincode: '',
+    password: '',
+    confirmPassword: ''
   });
+  const [err, setErr] = useState([]);
   const navigate = useNavigate();
+
+
+  // Get access to the 'dispatch' function from Redux
   const dispatch = useDispatch();
+
+  // Extract the 'loading' property from the 'userData' slice of Redux state
   const { loading } = useSelector(state => state.userData);
 
 
-  const ErrorHandler = () => {
-
-    // Regular expressions for various form field validations
-    const nameRegex = /^[A-Za-z\s]+$/; // Allows letters and spaces only
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/; // Basic email format validation
-    const phoneRegex = /^\d{10}$/; // 10-digit phone number
-    const aadharRegex = /^\d{12}$/; // 12-digit Aadhar number
-
-    // Initialize an empty error object
-    const error = {};
-
-    // Validate Date of Birth
-    if (!formValues.dob) {
-      error.dob = 'Date of Birth requried';
-    }
-
-    // Update the errors state for Date of Birth
-    setErrors((prev) => {
-      return {
-        ...prev, dob: error.dob
-      }
-    });
-
-    // Validate Full Name
-    if (!formValues.name) {
-      error.name = 'Full Name is required';
-    } else if (!nameRegex.test(formValues.name)) {
-      error.name = 'Invalid name. Please use only letters and spaces.';
-    }
-
-    // Update the errors state for Full Name
-    setErrors((prev) => {
-      return {
-        ...prev, name: error.name
-      }
-    });
-
-    // Validate Email
-    if (!formValues.email) {
-      error.email = 'Email is required';
-    } else if (!emailRegex.test(formValues.email)) {
-      error.email = 'Invalid email address.';
-    }
-
-    // Update the errors state for Email
-    setErrors((prev) => {
-      return {
-        ...prev, email: error.email
-      }
-    });
-
-    // Validate Phone Number
-    if (!formValues.phone) {
-      error.phone = 'Phone number is required';
-    } else if (!phoneRegex.test(formValues.phone)) {
-      error.phone = 'Invalid phone number. Please enter 10 digits.';
-    }
-
-    // Update the errors state for Phone Number
-    setErrors((prev) => {
-      return {
-        ...prev, phone: error.phone
-      }
-    });
-
-    // Validate Aadhar Number
-    if (!formValues.aadhar) {
-      error.aadhar = 'Aadhar number is required'
-    } else if (!aadharRegex.test(formValues.aadhar)) {
-      error.aadhar = 'Invalid Aadhar number. Please enter 12 digits.';
-    }
-
-    // Update the errors state for Aadhar Number
-    setErrors((prev) => {
-      return {
-        ...prev, aadhar: error.aadhar
-      }
-    });
-
-    // Return the error object with error messages
-    return error;
-  }
-
-  // Takes an error array and searches for a specific error message based on the provided criteria.
-  const HandleErrorStructure = (find, error) => {
-    // Initialize an array to store matching error messages
-    const value = error.map((value => {
-      if (value.path == find) {
-        return value.msg;// Return the error message if 'path' matches the criteria
-      }
-      // Return undefined if 'path' doesn't match to keep only matching values
-    }));
-    return value; // Return an array of matching error messages
-  }
-  /**
-* Handle User Signup
-* 
-* This function is responsible for processing user signup requests. It is triggered when a user submits a signup form.
-* 
-* Steps:
-* 1. Prevents the default form submission behavior to handle the request via AJAX.
-* 2. Dispatches a signup request action to indicate that the signup process has started.
-* 3. Sends a POST request to a specified URL (likely a server endpoint) with user data including name, email, date of birth (DOB), phone number, and Aadhar number.
-* 4. Upon successful response (HTTP status 200), it parses the response data (presumably containing user information) and dispatches a signup success action.
-* 5. It also navigates the user to a 'verify-email' page (for email verification) while replacing the current URL in the browser history.
-* 6. If there's an error during the API request, it dispatches a signup failed action and logs the error to the console.
-* 7. Any exceptions outside the try-catch block are also caught and logged.
-* 
-* The event object, typically a form submission event.
-*/
+  // Define a function to handle user signup form submission
   const HandleSignup = (e) => {
-    e.preventDefault();
-    const error = ErrorHandler();
-    const isErr = Object.getOwnPropertyNames(error).length
+    e.preventDefault(); // Prevent the default form submission behavior
 
-    if (isErr == 0) {
-      try {
-        dispatch({ type: USER.SIGNUP_REQUEST });
-        axios.post(URL + '/signup', {
-          name: formValues.name,
-          email: formValues.email,
-          dob: formValues.dob,
-          phone: formValues.phone,
-          aadhar: formValues.aadhar
-        }).then(res => {
-          if (res.status == 200) {
-            let data = JSON.parse(res.data);
-            dispatch({ type: USER.SIGNUP_SUCCESS, payload: data });
+    // Try to initiate the signup process
+    try {
+      // Dispatch an action to indicate the start of the signup request
+      dispatch({ type: USER.SIGNUP_REQUEST });
 
-            toast.success("Account Created", {
-              position: toast.POSITION.BOTTOM_CENTER
-            });
-            navigate('/send-email', { replace: true })
-          }
-        }).catch(err => {
+      // Make an HTTP POST request to the signup API with form data
+      axios.post(URL + '/user/api/signup', {
+        name: formValues.name,
+        email: formValues.email,
+        city: formValues.city,
+        phone: formValues.phone,
+        state: formValues.state,
+        country: formValues.country,
+        password: formValues.password,
+        confirmPassword: formValues.confirmPassword,
+        pincode: formValues.pincode
+      }).then(res => {
+        console.log(res);
 
-          const error = err.response.data.error;
-          setErrors((prev) => {
-            return {
-              ...prev,
-              phone: HandleErrorStructure('phone', error),
-              aadhar: HandleErrorStructure('aadhar', error),
-              email: HandleErrorStructure('email', error)
-            }
+        // If signup is successful, dispatch a success action with user data
+        if (res.status === 200) {
+          const data = JSON.parse(res.data);
+          dispatch({ type: USER.SIGNUP_SUCCESS, payload: data });
+
+          // Navigate to the '/verify-email' route
+          navigate('/verify-email');
+
+          // Display a success message using a toast notification
+          toast.success("Account Created", {
+            position: toast.POSITION.BOTTOM_CENTER
           });
-          dispatch({ type: USER.SIGNUP_FAILED, payload: err });
-        })
-      } catch (err) {
+        }
+      }).catch(err => {
+        if (err) {
+          // Set an error message if there's an error response
+          setErr(err.response.data.error);
+        }
+
+        // Dispatch a failure action with the error payload
         dispatch({ type: USER.SIGNUP_FAILED, payload: err });
-      }
+      })
+    } catch (err) {
+      // Dispatch a failure action if an error occurs during the signup process
+      dispatch({ type: USER.SIGNUP_FAILED, payload: err });
     }
   }
 
-  const resetError = (e) => {
-    setErrors(prev => {
-      return { ...prev, [e.target.name]: '' }
-    });
-  }
 
   // Handle changes in input fields by updating the OTP (One-Time Password) state.
   const HandleChange = (e) => {
-    resetError(e);
-
     // Update the form field state using the spread operator to maintain previous values
     setFormValues((prev) => {
       return { ...prev, [e.target.name]: e.target.value }
@@ -203,52 +97,81 @@ const Signup = () => {
     loading ?
       <Loader />
       :
-      <div className='form-wrapper'>
-        <section className="container">
-          <header>Registration Form</header>
-          <form className="form">
-            <InuptField
-              placeholder={"Enter your name"}
-              type={"text"} label={"Full Name"}
-              HandleChange={HandleChange}
-              msg={errors.name}
-              name={"name"}
-            />
-            <div className="column">
-              <InuptField
-                placeholder={"Enter your phone"}
-                type={"text"} label={"Phone Number"}
-                HandleChange={HandleChange}
-                msg={errors.phone}
-                name={"phone"}
-              />
-              <InuptField
-                placeholder={"Enter birth data"}
-                type={"date"} label={"Date of Birth"}
-                HandleChange={HandleChange}
-                msg={errors.dob}
-                name={"dob"}
-              />
+      <>
+        <div className="form-container">
+          <div id="FormContainer">
+            <div className="ImgContainer">
             </div>
-            <InuptField
-              placeholder={"Enter your email"}
-              type={"text"} label={"Email"}
-              HandleChange={HandleChange}
-              msg={errors.email}
-              name={"email"}
-            />
-            <InuptField
-              placeholder={"Enter Aadhar number"}
-              type={"text"} label={"Aadhar number"}
-              HandleChange={HandleChange}
-              msg={errors.aadhar}
-              name={"aadhar"}
-            />
-            <button onClick={e => HandleSignup(e)}>Submit</button>
-          </form>
-        </section>
-      </div>
+            <form id="Form">
+              <h1 id="FormHeading">Sign Up</h1>
+              <div className="Name">
+                <li><label>Full Name:</label>
+                  <input type="text" name='name' onChange={HandleChange} placeholder="Enter your Fullname" />
+                  <Alert label={'name'} errors={err} />
+                </li>
+                <li><label>Phone No:</label>
+                  <input type="text" name='phone' onChange={HandleChange} placeholder="Enter your phone" />
+                  <Alert label={'phone'} errors={err} />
+                </li>
+              </div>
+              <li>
+                <label>Email:</label>
+                <input type="email" name='email' onChange={HandleChange} placeholder="Enter your email" />
+                <Alert label={'email'} errors={err} />
+              </li>
+              <div className="Name">
+                <li><label>City:</label>
+                  <input type="text" name='city' onChange={HandleChange} placeholder="Enter your city" />
+                  <Alert label={'city'} errors={err} />
+                </li>
+                <li><label>State:</label>
+                  <input type="text" name='state' onChange={HandleChange} placeholder="Entr your state" />
+                  <Alert label={'state'} errors={err} />
+                </li>
+              </div>
+              <div className="Name">
+                <li>
+                  <label>Country:</label>
+                  <select name='country' onChange={HandleChange}>
+                    <option>Afghanistan</option>
+                    <option>India</option>
+                    <option>Albania</option>
+                    <option>Algeria</option>
+                    <option>Andorra</option>
+                    <option>Angola</option>
+                    <option>Argentina</option>
+                    <option>Armenia</option>
+                    <option>Australia</option>
+                    <option>Austria</option>
+                    <option>Azerbaijan</option>
+                    <option>Croatia</option>
+                  </select >
+                  <Alert label={'country'} errors={err} />
+                </li>
+                <li>
+                  <label>Pincode No:</label>
+                  <input type="text" name='pincode' onChange={HandleChange} placeholder="Enter your pincode" />
+                  <Alert label={'pincode'} errors={err} />
+                </li>
+              </div>
+              <div className="password">
+                <li><label>Password:</label>
+                  <input type="password" name='password' onChange={HandleChange} />
+                  <Alert label={'password'} errors={err} />
+                </li>
+                <li>
+                  <label>Confirm Password:</label>
+                  <input type="password" name='confirmPassword' onChange={HandleChange} />
+                  <Alert label={'confirmPassword'} errors={err} />
+                </li>
+              </div>
+              <button onClick={e => HandleSignup(e)} >Sign Up</button>
+            </form>
+          </div>
+        </div>
+      </>
   )
 }
 
 export default Signup
+

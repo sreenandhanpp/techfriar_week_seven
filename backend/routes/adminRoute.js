@@ -6,10 +6,16 @@ const { validationResult } = require('express-validator');
 const commonHelper = require('../helpers/commonHelper');
 const router = Router();
 
+const multer = require('multer');
+
+// Set up multer to use memory storage
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 // Handle POST request to create a new product
 router.post('/create-product', productValidator, (req, res) => {
     // Validate the request data using the productValidator middleware
+    let images = [...req.body.images];
     const err = validationResult(req);
 
     // If there are validation errors in the request data
@@ -20,7 +26,7 @@ router.post('/create-product', productValidator, (req, res) => {
     } else {
         try {
             // Generate image URLs for the new product using generateUrls function
-            generateUrls(req)
+            generateUrls(images)
                 .then(urls => {
                     if (urls.length == 4) {
                         // If there are exactly 4 image URLs generated, proceed to create the product
@@ -30,6 +36,7 @@ router.post('/create-product', productValidator, (req, res) => {
                                 res.status(200).json({ message: resp });
                             })
                             .catch(err => {
+                                console.log(err)
                                 // Respond with a 400 (Bad Request) status and an error message if product creation fails
                                 res.status(400).json({ message: err });
                             });
@@ -63,6 +70,9 @@ router.post('/delete-product', (req, res) => {
 
 // Handle POST request to update a product
 router.post('/update-product', productValidator, (req, res) => {
+
+    let images = [...req.body.images];
+
     // Validate the request data using the productValidator middleware
     const err = validationResult(req);
 
@@ -74,7 +84,7 @@ router.post('/update-product', productValidator, (req, res) => {
     } else {
         try {
             // Generate image URLs for the updated product using generateUrls function
-            generateUrls(req)
+            generateUrls(images)
                 .then(urls => {
                     if (urls.length == 4) {
                         // If there are exactly 4 image URLs generated, proceed to update the product

@@ -1,11 +1,10 @@
 const adminHelper = require("../helpers/adminHelper");
 
-exports.generateUrls = (req) => {
+exports.generateUrls = (images) => {
     return new Promise(async (resolve, reject) => {
-        const files = req.files.image
         const urls = [];
-        for (const file of files) {
-            adminHelper.uploadProductImage(file).then(resp => {
+        for (let i = 0; i < images.length; i++) {
+            adminHelper.uploadProductImage(images[i]).then(resp => {
                 urls.push(resp);
                 if (urls.length == 4) {
                     resolve(urls);

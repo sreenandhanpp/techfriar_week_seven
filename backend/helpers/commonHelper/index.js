@@ -1,4 +1,4 @@
-const Product = require("../../MongoDb/models/adminModels/Products");
+const Vehicle = require("../../MongoDb/models/adminModels/Vehicle");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -7,7 +7,7 @@ module.exports = {
     getAllProducts: () => {
         return new Promise(async (resolve, reject) => {
             // Use the Product model to find all products in the database
-            Product.find()
+            Vehicle.find()
                 .then(products => {
                     // Resolve with the retrieved products
                     resolve(products);
@@ -23,18 +23,19 @@ module.exports = {
     getProduct: (id) => {
         return new Promise(async (resolve, reject) => {
             // Use the Product model to find a product with the provided ID
-            Product.findOne({ _id: new ObjectId(id) })
-                .then(product => {
+            Vehicle.findOne({ _id: new ObjectId(id) })
+                .then(vehicle => {
                     // If no product is found, reject with an error message
-                    if (!product) {
+                    if (!vehicle) {
                         reject("Product not found");
                     }
                     // Resolve with the retrieved product data
-                    resolve(product);
+                    resolve(vehicle);
                 })
                 .catch(err => {
+                    console.log(err)
                     // Reject with an error message if there's an issue with retrieval
-                    reject("Something went wrong");
+                    reject(err);
                 });
         });
     },

@@ -39,7 +39,7 @@ const SendPhoneOtp = () => {
             dispatch({ type: USER.SEND_OTP_REQUEST });
 
             // Send a POST request to the server to send an phone OTP
-            axios.post(URL + '/send-phone-otp', {
+            axios.post(URL + '/user/api/send-phone-otp', {
                 id: userData.id,
                 phone: userData.phone
             }).then(res => {

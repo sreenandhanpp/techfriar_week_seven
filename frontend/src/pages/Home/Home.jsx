@@ -1,88 +1,114 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import PincodeInput from '../../components/PincodeInput/PincodeInput';
 import Navbar from '../../components/Navbar/Navbar';
 import './style.css'
 import { USER } from '../../redux/constants/user';
 import axios from 'axios';
+import { ADMIN } from '../../redux/constants/admin';
+import { Link } from 'react-router-dom';
+import { URL } from '../../utils/url';
+import BookNow from '../../components/BookNow/BookNow';
+import Loader from '../../components/Loader/Loader';
 
 const Home = () => {
+    const [searchText, setSearchText] = useState('');
+    const [product, setProduct] = useState([]);
+
+    // Access Redux store state and dispatch function
     const dispatch = useDispatch();
-    const [pincode, setPincode] = useState('');
-    const [err, setErr] = useState('');
-    const [city, setCity] = useState('');
-    const [dist, setDist] = useState('');
-    const [state, setState] = useState('');
-    const [region, setRegion] = useState('');
 
-    const { loading, error, data } = useSelector(state => state.pincodeData);
+    // Extract loading and data properties from the Redux store
+    const { loading, data } = useSelector(state => state.products);
 
-    // Handle the user's request to fetch location details based on a PIN code.
-    const HandleFetch = (e) => {
-        // Define a regular expression to validate the PIN code format (6 digits)
-        let reg = new RegExp("^[1-9][0-9]{5}$");
+    // Use the useEffect hook to fetch products data when the component mounts
+    useEffect(() => {
+        try {
+            // Dispatch a FETCH_PRODUCTS_REQUEST action to indicate that product fetching has started
+            dispatch({ type: ADMIN.FETCH_PRODUCTS_REQUEST });
 
-        if (pincode === "") {
-            // Set an error message if the PIN code field is empty
-            setErr("Fill the pincode field");
-        } else if (!reg.test(pincode)) {
-            // Set an error message if the PIN code format is incorrect
-            setErr("Incorrect Pincode");
-        } else {
-            // Dispatch an action to indicate the PIN details fetch request is in progress
-            dispatch({ type: USER.FETCH_PIN_DETAILS_REQUEST });
-
-            // Send a GET request to the API to fetch location details based on the PIN code
-            axios.get(`https://api.postalpincode.in/pincode/${pincode}`).then(res => {
-                if (res.data[0].PostOffice) {
-                    // Extract relevant location data from the API response
-                    let data = res.data[0].PostOffice[0];
-
-                    // Update state variables with location details
-                    setDist(data.District);
-                    setState(data.State);
-                    setCity(data.Block);
-                    setRegion(data.Region);
-
-                    // Dispatch an action to indicate a successful PIN details fetch
-                    dispatch({ type: USER.FETCH_PIN_DETAILS_SUCCESS, payload: data });
+            // Send a GET request to the server API to fetch products data
+            axios.get(URL + '/common/api/all-product').then(res => {
+                if (res.status === 200) {
+                    // Dispatch a FETCH_PRODUCTS_SUCCESS action with the fetched data
+                    dispatch({ type: ADMIN.FETCH_PRODUCTS_SUCCESS, payload: res.data });
+                    setProduct(res.data);
                 } else {
-                    // Throw an error if no records are found
-                    throw "No Records Found";
+                    // Dispatch a FETCH_PRODUCTS_FAILED action with an error message
+                    dispatch({ type: ADMIN.FETCH_PRODUCTS_FAILED, error: res.error });
                 }
-            }).catch(err => {
-                // Set an error message and dispatch an action for a failed fetch
-                setErr(err);
-                dispatch({ type: USER.FETCH_PIN_DETAILS_FAILED, error: err });
             });
+        } catch (err) {
+            // Dispatch a FETCH_PRODUCTS_FAILED action with a generic error message
+            dispatch({ type: ADMIN.FETCH_PRODUCTS_FAILED, error: "error" });
         }
-    }
+    }, []); // The empty dependency array indicates that this effect runs once when the component mounts
+
+
+    // Define a function to handle product search based on user input
+    const HandleSearch = (event) => {
+        // Update the 'searchText' state with the user's input
+        setSearchText(event.target.value);
+
+        // Filter products based on the search text
+        const filteredProducts = data.filter((product) => {
+            const { name, model, manufacturer } = product;
+            const lowerSearchText = searchText.toLowerCase();
+
+            // Check if product properties contain the lowercased search text
+            return (
+                name.toLowerCase().includes(lowerSearchText) ||
+                model.toLowerCase().includes(lowerSearchText) ||
+                manufacturer.toLowerCase().includes(lowerSearchText)
+            );
+        });
+
+        // If there are filtered products, update the displayed products; otherwise, show all products
+        if (filteredProducts.length > 0) {
+            setProduct(filteredProducts);
+        } else {
+            setProduct(data);
+        }
+    };
+
     return (
-        <>
-            <Navbar />
-            <div className='home-wrapper'>
-                <PincodeInput HandleFetch={HandleFetch} setPincode={setPincode} />
-                {
-                    err ?
-                        <div className='pincode-wrapper'>
-                            <div className="card">
-                                <p className="card-title"> </p>
-                                <p className="card-des2">
-                                    {err}
-                                </p>
-                            </div>
-                        </div>
-                        : data && <div className='pincode-wrapper'>
-                            <div className="card">
-                                <p className="card-title">Pincode Detals</p>
-                                <p className="card-des">
-                                    {city},{dist},{region},{state}
-                                </p>
-                            </div>
-                        </div>
-                }
-            </div>
-        </>
+        loading ?
+            <Loader />
+            :
+            <>
+                <Navbar />
+                <section className="section__container musthave__container">
+                    <div className="musthave__nav">
+                        <h1 className="section__title">Vehicles</h1>
+                        <input type='text' onChange={HandleSearch} />
+
+                    </div>
+                    <div className="musthave__grid">
+                        {
+                            product.map((product) => {
+                                return (
+                                    <Link key={product._id} to={`/product-details/${product._id}`}>
+                                        <div className="container">
+                                            <div className="products">
+                                                <div className="product">
+                                                    <img src={product.images[0].url} width="250px" height="250px" alt="" />
+                                                    <div className="content">
+                                                        <h3><Link >{product.name} </Link></h3>
+                                                        <span><Link >₹{product.price} </Link></span>
+                                                    </div>
+                                                    <div className="link">
+                                                        <Link><BookNow /></Link>
+                                                        <Link>Add to Cart</Link>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                )
+                            })
+                        }
+                    </div>
+                </section>
+            </>
     )
 }
 

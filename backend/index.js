@@ -25,8 +25,8 @@ const app = express();
 
 //encoding the url to make the data passed through it to a object 
 app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
 app.use(fileupload({ useTempFiles: true }))
 
@@ -39,7 +39,7 @@ app.use(session({
 
 app.use('/user/api', userRoute);
 app.use('/admin/api', adminRoute);
-app.use('/common/api', userRoute);
+app.use('/common/api', commonRoute);
 
 
 //function to start the server
