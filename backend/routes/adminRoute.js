@@ -110,7 +110,11 @@ router.post('/update-product', productValidator, (req, res) => {
     }
 });
 
-
+router.post('/update-admin-details',(req,res) => {
+    adminHelper.updateAdminDetails().then(resp => {
+        res.status(200).json(resp);
+    });
+})
 
 
 

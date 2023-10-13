@@ -1,0 +1,10 @@
+.payment-status-btn{
+    width: fit-content;
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-size: 1.1rem;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-top:20px;
+}

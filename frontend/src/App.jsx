@@ -13,6 +13,7 @@ import ProductDetails from './pages/ProductDetails/ProductDetails';
 import PaymentSuccess from './pages/PaymentSuccess/PaymentSuccess';
 import PaymentFailed from './pages/PaymentFailed/PaymentFailed';
 import BookedDetails from './pages/BookedDetails/BookedDetails';
+import AdminProfile from './pages/AdminProfile/AdminProfile';
 
 
 
@@ -27,6 +28,7 @@ function App() {
         <Route exact path='/signup' element={<Signup />} />
         <Route exact path='/login' element={<Login />} />
         <Route exact path='/' element={<Home />} />
+        <Route exact path='/admin-profile' element={<AdminProfile />} />
         <Route exact path='/booked-details' element={<BookedDetails />} />
         <Route exact path='/payment/success' element={<PaymentSuccess />} />
         <Route exact path='/payment/failed' element={<PaymentFailed />} />

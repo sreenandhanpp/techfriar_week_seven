@@ -15,9 +15,8 @@ const Navbar = () => {
             <span className="line line3"></span>
           </div>
           <ul className="menu-items">
-            <li><Link>Logout</Link></li>
             <li><Link>Cart</Link></li>
-            <li><Link>Bookings</Link></li>
+            <li><Link to={'/booked-details'}>Bookings</Link></li>
             <li><Link><Logout /></Link></li>
           </ul>
           <h1 className="logo">Vehicles</h1>

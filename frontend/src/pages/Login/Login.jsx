@@ -43,9 +43,8 @@ const Login = () => {
 
                     // Check if the user is an admin and navigate accordingly
                     if (res.data.isAdmin) {
-                        navigate('/admin-dashboard', { replace: true });
+                        navigate('/admin', { replace: true });
                     } else {
-                        console.log('redirecting');
                         navigate('/', { replace: true });
                     }
                 } else {
@@ -61,6 +60,8 @@ const Login = () => {
                         // Set errors if there are validation errors
                         setErr(error.response.data.errors);
                     } else {
+                        //emptying previos error
+                        setErr('');
                         // Set an error message for other types of errors
                         setNotMatchErr(error.response.data.error);
                     }

@@ -1,0 +1,192 @@
+.booked {
+  margin: 20px 0;
+  padding: 0;
+  font-family: arial, sans-serif;
+}
+.booked-header {
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  margin-bottom: 30px;
+  font-size: 24px;
+}
+
+/* BOOKING SPAN */
+.booked-span-1 {
+  margin-top: 5px;
+}
+
+.booked-span-2 {
+  margin-top: 30px;
+}
+
+.booked-span-3 {
+  margin-top: 30px;
+}
+
+/* BUTTONS CSS */
+
+.cancel-btn {
+  background-color: #da0f2a;
+  width: fit-content;
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 1.1rem;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin: 20px 0px;
+}
+
+.booked img {
+  max-width: 100%;
+  vertical-align: middle;
+  border-radius: 4px;
+}
+
+a {
+  text-decoration: none;
+  color: #333333;
+}
+
+a:hover {
+  color: #f58551;
+}
+
+.booked ul {
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+}
+
+.booked .container {
+  width: 90%;
+  margin: 0 auto;
+  overflow: auto;
+}
+
+/* --- VEHICLE LIST --- */
+.products {
+  border-top: 1px solid #ddd;
+}
+
+.products > li {
+  padding: 1rem 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.row {
+  position: relative;
+  overflow: auto;
+  width: 100%;
+}
+
+.col,
+.quantity,
+.remove {
+  float: left;
+}
+
+.col.left {
+  width: 70%;
+}
+
+.col.right {
+  width: 30%;
+  position: absolute;
+  right: 0;
+  top: calc(50% - 70px);
+}
+
+.detail {
+  padding: 0 0.5rem;
+  line-height: 2.2rem;
+}
+
+.detail .name {
+  font-size: 1.2rem;
+}
+
+.detail .description {
+  color: #7d7d7d;
+  font-size: 1rem;
+}
+
+.detail .price {
+  font-size: 1.5rem;
+}
+
+.quantity,
+.remove {
+  width: 50%;
+  text-align: center;
+}
+
+.remove svg {
+  width: 60px;
+  height: 60px;
+}
+
+/* --- SMALL SCREEN --- */
+@media all and (max-width: 599px) {
+  .thumbnail img {
+    display: none;
+  }
+
+  .quantity > input {
+    width: 40px;
+    height: 40px;
+    left: calc(50% - 20px);
+  }
+
+  .remove svg {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* --- MEDIUM & LARGE SCREEN --- */
+@media all and (min-width: 600px) {
+  html {
+    font-size: 14px;
+  }
+
+  .booked .container {
+    width: 75%;
+    max-width: 960px;
+  }
+
+  .thumbnail,
+  .detail {
+    float: left;
+  }
+
+  .thumbnail {
+    width: 35%;
+  }
+
+  .detail {
+    width: 65%;
+  }
+
+  .promotion,
+  .summary {
+    width: 50%;
+  }
+
+  .checkout {
+    width: 100%;
+  }
+
+  .checkout,
+  .summary {
+    text-align: right;
+  }
+}
+
+/* --- LARGE SCREEN --- */
+@media all and (min-width: 992px) {
+  html {
+    font-size: 16px;
+  }
+}
