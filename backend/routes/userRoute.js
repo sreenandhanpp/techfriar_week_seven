@@ -208,7 +208,7 @@ router.post("/create-checkout-session", async (req, res) => {
           "card",
         ],
       });
-
+      console.log(session.payment_intent);
       if (session.success_url) {
         // Perform additional actions (e.g., create booking details) if the success URL is available
         await userHelper.createBookingDetails(req.body);
@@ -225,11 +225,14 @@ router.post("/create-checkout-session", async (req, res) => {
 // Define a POST route for retrieving booked products
 router.post("/get-booked-products", (req, res) => {
   // Call the 'getBookingDetails' function from 'userHelper' to retrieve booking details
-  userHelper.getBookingDetails(req.body).then((resp) => {
-    res.status(200).json(resp)// Resolve and send the response
-  }).catch(err => {
-    res.status(400).json({ message: err });
-  })
+  userHelper
+    .getBookingDetails(req.body)
+    .then((resp) => {
+      res.status(200).json(resp); // Resolve and send the response
+    })
+    .catch((err) => {
+      res.status(400).json({ message: err });
+    });
 });
 
 // Define a POST route for searching products
@@ -250,12 +253,29 @@ router.get("/logout", (req, res) => {
   res.status(200).json();
 });
 
-router.post('/cancel-request',(req,res) => {
-  userHelper.sendCancelRequest(req.body).then(resp => {
-    res.status(200).json({ message:resp });
-  }).catch(err => {
-    res.status(400).json({ message:err });
-  })
-})
+router.post("/cancel-request", (req, res) => {
+  userHelper
+    .sendCancelRequest(req.body)
+    .then((resp) => {
+      res.status(200).json({ message: resp });
+    })
+    .catch((err) => {
+      res.status(400).json({ message: err });
+    });
+});
+
+// router.get("/payment/success", async (req, res) => {
+//   const { payment_intent } = req.query; // Retrieve the Payment Intent ID from the query parameters
+
+//   if (payment_intent) {
+//     console.log("Payment Intent ID: " + payment_intent);
+//     // Use payment_intent as needed
+//   } else {
+//     console.error("Payment Intent ID not found in query parameters.");
+//     // Handle the error
+//   }
+
+//   // You can render a success page or redirect the user to an appropriate page here
+// });
 
 module.exports = router;

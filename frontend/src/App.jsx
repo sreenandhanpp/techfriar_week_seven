@@ -14,6 +14,8 @@ import PaymentSuccess from './pages/PaymentSuccess/PaymentSuccess';
 import PaymentFailed from './pages/PaymentFailed/PaymentFailed';
 import BookedDetails from './pages/BookedDetails/BookedDetails';
 import AdminProfile from './pages/AdminProfile/AdminProfile';
+import EditAdminProfile from './pages/EditAdminProfile/EditAdminProfile';
+import AllBookingDetails from './pages/AllBookingDetails/AllBookingDetails';
 
 
 
@@ -28,6 +30,8 @@ function App() {
         <Route exact path='/signup' element={<Signup />} />
         <Route exact path='/login' element={<Login />} />
         <Route exact path='/' element={<Home />} />
+        <Route exact path='/all-booking-details' element={<AllBookingDetails />} />
+        <Route exact path='/edit-admin-profile' element={<EditAdminProfile />} />
         <Route exact path='/admin-profile' element={<AdminProfile />} />
         <Route exact path='/booked-details' element={<BookedDetails />} />
         <Route exact path='/payment/success' element={<PaymentSuccess />} />

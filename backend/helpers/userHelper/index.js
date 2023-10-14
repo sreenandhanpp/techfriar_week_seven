@@ -47,10 +47,10 @@ module.exports = {
             email: userData.email,
             name: userData.name,
             address: {
-              pincode: userData.pincode,
-              country: userData.country,
-              city: userData.city,
-              state: userData.state,
+              pincode: userData.address.pincode,
+              country: userData.address.country,
+              city: userData.address.city,
+              state: userData.address.state,
             },
             verified: false,
             admin: userData.admin,
@@ -272,6 +272,7 @@ module.exports = {
             email: user.email,
             address: user.address,
             phone: user.phone,
+            admin: user.admin
           };
 
           // Resolve with the user data

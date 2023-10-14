@@ -35,13 +35,13 @@ const newUserSchema = new mongoose.Schema({
       type: String,
       required: true,
     },
-    profile_image: {
-      id: {
-        type: String,
-      },
-      url: {
-        type: String,
-      },
+  },
+  profile_image: {
+    id: {
+      type: String,
+    },
+    url: {
+      type: String,
     },
   },
   password: {

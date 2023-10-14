@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getItem } from '../../../localStorage/getItem';
 import { Link } from 'react-router-dom';
 
 const AdminProfile = () => {
-    const [adminDetails, setAdminDetails] = ({
+    const userData = getItem('user');
+    const [adminDetails, setAdminDetails] = useState({
         name: '',
         phone: '',
         email: '',
@@ -12,11 +13,14 @@ const AdminProfile = () => {
         country: '',
         city: '',
         profile: '',
-
     });
+    const [url,setUrl] = useState('');
+   
     useEffect(() => {
-        const userData = getItem('user');
         if (userData) {
+            if(userData.profile_image){
+                setUrl(userData.profile_image.url);
+            }
             setAdminDetails((prev) => {
                 return {
                     ...prev,
@@ -27,7 +31,6 @@ const AdminProfile = () => {
                     state: userData.address.state,
                     country: userData.address.country,
                     city: userData.address.city,
-                    profile: userData.profile_image.url
                 }
             }
             )
@@ -43,7 +46,7 @@ const AdminProfile = () => {
             <p>state: {adminDetails.state} </p>
             <p>city: {adminDetails.city} </p>
             <p>pincode: {adminDetails.pincode} </p>
-            <img src={adminDetails.profile} alt="" />
+            <img src={url} alt="" />
             <Link to={'/edit-admin-profile'}> <button>Edit </button> </Link>
         </div>
     )

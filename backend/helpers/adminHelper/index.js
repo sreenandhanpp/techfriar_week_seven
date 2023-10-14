@@ -141,13 +141,7 @@ module.exports = {
       }
     });
   },
-  getAllBookedDetails: () => {
-    return new Promise(async (resolve, reject) => {
-      BookingSchema.find().then((res) => {
-        console.log(res);
-      });
-    });
-  },
+
   updateAdminDetails: ({
     phone,
     name,
@@ -156,27 +150,106 @@ module.exports = {
     country,
     city,
     state,
-    password
+    password,
+    img_id,
+    image,
   }) => {
     return new Promise(async (resolve, reject) => {
-      newUser
-        .findOne(
-          { admin: true },
-          {
-            phone: phone,
-            name: name,
-            email: email,
-            address: {
-              pincode: pincode,
-              country: country,
-              city: city,
-              state: state,
-            },
-            password: password,
-          }
-        )
+      if (img_id) {
+        await cloudinary.uploader.destroy(img_id);
+      }
+      // Use the Cloudinary uploader to upload the image from the provided temporary file path
+      cloudinary.uploader.upload(image, (error, result) => {
+        if (result && result.secure_url) {
+          // If the upload is successful, resolve with the secure URL of the uploaded image
+          newUser
+            .findOne(
+              { admin: true },
+              {
+                phone: phone,
+                name: name,
+                email: email,
+                address: {
+                  pincode: pincode,
+                  country: country,
+                  city: city,
+                  state: state,
+                },
+                password: password,
+                profile_image: {
+                  _id: result.public_id,
+                  url: result.secure_url,
+                },
+              }
+            )
+            .then((res) => {
+              resolve(res);
+            });
+        } else {
+          // If there's an error or the secure URL is not present, reject with an error message
+          reject("something went wrong on uploading images!!");
+        }
+      });
+    });
+  },
+  getAllBookedDetails: () => {
+    return new Promise(async (resolve, reject) => {
+      BookingSchema.aggregate([
+        {
+          $unwind: "$bookingList",
+        },
+        {
+          $project: {
+            _id: 0,
+            userId: 1,
+            bookingList: 1,
+          },
+        },
+      ])
         .then((res) => {
           resolve(res);
+        })
+        .catch((err) => {
+          reject("Something went wrong on fetching booking details");
+        });
+    });
+  },
+  acceptBooking: ({ userId, vehicleId }) => {
+    return new Promise(async (resolve, reject) => {
+      BookingSchema.updateOne(
+        {
+          userId: new ObjectId(userId), // Replace with the user's ObjectId
+          "bookingList._id": new ObjectId(vehicleId), // Replace with the product's ObjectId
+        },
+        {
+          $set: { "bookingList.$.booking_status": "SUCCESS" }, // Replace with the desired status update
+        }
+      )
+        .then((res) => {
+          resolve("Booking Accepted Successfully");
+        })
+        .catch((err) => {
+          reject("Something went wrong on Accepting Booking");
+        });
+    });
+  },
+  rejectBooking: ({ userId, vehicleId }) => {
+    console.log(userId,vehicleId)
+    return new Promise(async (resolve, reject) => {
+      BookingSchema.updateOne(
+        {
+          userId: new ObjectId(userId), // Replace with the user's ObjectId
+          "bookingList._id": new ObjectId(vehicleId), // Replace with the product's ObjectId
+        },
+        {
+          $set: { "bookingList.$.booking_status": "REJECTED" }, // Replace with the desired status update
+        }
+      )
+        .then((res) => {
+          resolve("Booking Rejected Successfully");
+        })
+        .catch((err) => {
+          reject("Something went wrong on Rejecting Booking");
         });
     });
   },
