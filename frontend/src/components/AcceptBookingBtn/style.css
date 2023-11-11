@@ -2,11 +2,8 @@
   background-color: rgb(26, 226, 103);
   width: fit-content;
   border-radius: 5px;
-  padding: 5px 10px;
-  font-size: 1.1rem;
+  padding: 2px 5px;
   color: white;
   border: none;
   cursor: pointer;
-  margin-top: 20px;
-  margin-bottom: 10px;
 }

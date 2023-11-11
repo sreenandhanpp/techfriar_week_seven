@@ -6,6 +6,10 @@ const deleteProductImage = require("./deleteProductImage");
 const BookingSchema = require("../../MongoDb/models/commonModels/Bookings");
 const newUser = require("../../MongoDb/models/userModels/User");
 const ObjectId = mongoose.Types.ObjectId;
+const dotenv = require("dotenv");
+dotenv.config();
+const stripe = require("stripe")(process.env.STRIPE_SECRET);
+const bcrypt = require("bcrypt");
 
 module.exports = {
   // Function to create a new product in the database
@@ -153,34 +157,41 @@ module.exports = {
     password,
     img_id,
     image,
+    userId,
   }) => {
     return new Promise(async (resolve, reject) => {
       if (img_id) {
         await cloudinary.uploader.destroy(img_id);
       }
       // Use the Cloudinary uploader to upload the image from the provided temporary file path
-      cloudinary.uploader.upload(image, (error, result) => {
+      cloudinary.uploader.upload(image, async (error, result) => {
         if (result && result.secure_url) {
+          // Hash the user's password using bcrypt with a salt factor of 10
+          password = await bcrypt.hash(password, 10);
+
           // If the upload is successful, resolve with the secure URL of the uploaded image
           newUser
-            .findOne(
-              { admin: true },
+            .findOneAndUpdate(
+              { _id: new ObjectId(userId) },
               {
-                phone: phone,
-                name: name,
-                email: email,
-                address: {
-                  pincode: pincode,
-                  country: country,
-                  city: city,
-                  state: state,
+                $set: {
+                  phone: phone,
+                  name: name,
+                  email: email,
+                  address: {
+                    pincode: pincode,
+                    country: country,
+                    city: city,
+                    state: state,
+                  },
+                  password: password,
+                  profile_image: {
+                    _id: result.public_id,
+                    url: result.secure_url,
+                  },
                 },
-                password: password,
-                profile_image: {
-                  _id: result.public_id,
-                  url: result.secure_url,
-                },
-              }
+              },
+              { returnOriginal: false }
             )
             .then((res) => {
               resolve(res);
@@ -234,7 +245,6 @@ module.exports = {
     });
   },
   rejectBooking: ({ userId, vehicleId }) => {
-    console.log(userId,vehicleId)
     return new Promise(async (resolve, reject) => {
       BookingSchema.updateOne(
         {
@@ -251,6 +261,59 @@ module.exports = {
         .catch((err) => {
           reject("Something went wrong on Rejecting Booking");
         });
+    });
+  },
+  cancelBooking: ({ userId, vehicleId }) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const bookingDetails = await BookingSchema.aggregate([
+          { $match: { userId: new ObjectId(userId) } },
+          { $unwind: "$bookingList" }, // Unwind the bookingList array
+          {
+            $match: {
+              "bookingList._id": new ObjectId(vehicleId), // Match the booking ID
+            },
+          },
+        ]);
+        const checkoutId = bookingDetails[0].bookingList.payment.intent_id;
+        const session = await stripe.checkout.sessions.retrieve(checkoutId);
+        const paymentIntentId = session.payment_intent;
+        stripe.refunds.create(
+          {
+            payment_intent: paymentIntentId,
+          },
+          (err, refund) => {
+            if (err) {
+              console.log(err);
+              reject("Something went wrong on refunding");
+            } else {
+              BookingSchema.updateOne(
+                {
+                  userId: new ObjectId(userId),
+                  "bookingList._id": new ObjectId(vehicleId),
+                },
+                {
+                  $set: {
+                    "bookingList.$.cancel_status": "SUCCESS",
+                    "bookingList.$.payment.refund_status": "SUCCESS",
+                    "bookingList.$.booking_status": "CANCELLED",
+                  },
+                }
+              )
+                .then((res) => {
+                  resolve("Booking Cancelled Successfully");
+                })
+                .catch((err) => {
+                  console.log(err);
+                  reject("Something went wrong on cancelling Booking");
+                });
+            }
+          }
+        );
+      } catch (error) {
+        console.log(error);
+        reject("Something went wrong on cancelling Booking");
+      }
     });
   },
 };

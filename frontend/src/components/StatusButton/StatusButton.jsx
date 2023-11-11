@@ -11,10 +11,10 @@ const StatusButton = ({ status }) => {
         color = '#FF9494'
     }
     const StatusSyle = {
-        backgroundColor: color
+        color: color
     }
   return (
-    <button className='status-btn' style={StatusSyle}>{status} </button>
+    <p className='status-btn' style={StatusSyle}>{status} </p>
   )
 }
 

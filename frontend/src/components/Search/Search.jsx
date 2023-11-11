@@ -9,7 +9,6 @@ const Search = () => {
   const HandleSearch = (event) => {
     setSearchText(event.target.value);
     const filteredProducts = data.filter((product) => {
-      console.log(product)
       const { name, model, manufacturer } = product;
       const lowerSearchText = searchText.toLowerCase();
       return (

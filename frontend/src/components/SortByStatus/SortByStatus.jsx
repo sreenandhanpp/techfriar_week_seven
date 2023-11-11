@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux';
+import './style.css';
 
 const SortByStatus = ({ setVehicles }) => {
     // Destructure the 'data' property from the 'bookedDetails' state using useSelector.
@@ -40,7 +41,7 @@ const SortByStatus = ({ setVehicles }) => {
             // Create a new array 'sortedVehicles' containing vehicles with matching booking status.
             const sortedVehicles = data.filter((value) => {
                 // Check if the booking status of the vehicle matches the selected status.
-                if (value.bookingDetails.booking_status === status) {
+                if (value.bookingList.booking_status === status) {
                     // If it matches, include the vehicle in the sorted list.
                     return value;
                 }
@@ -50,14 +51,16 @@ const SortByStatus = ({ setVehicles }) => {
             return sortedVehicles;
         }
     }
-    
+
     return (
-        <select id="sortDropdown" value={status} onChange={handleSortChange}>
-            <option value="default">Default</option>
-            <option value="PENDING">PENDING</option>
-            <option value="SUCCESS">SUCCESS</option>
-            <option value="REJECTED">REJECTED</option>
-        </select>
+        <div class="custom-select">
+            <select id="sortDropdown" value={status} onChange={handleSortChange}>
+                <option value="default">Default</option>
+                <option value="PENDING">Pending</option>
+                <option value="SUCCESS">Success</option>
+                <option value="REJECTED">Rejected</option>
+            </select>
+        </div>
     )
 }
 

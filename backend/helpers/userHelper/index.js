@@ -14,9 +14,7 @@ const Vehicle = require("../../MongoDb/models/adminModels/Vehicle");
 module.exports = {
   // Function to handle user registration
   doSignup: (userData) => {
-    console.log(userData)
     return new Promise(async (resolve, reject) => {
-    
       // Hash the user's password using bcrypt with a salt factor of 10
       userData.password = await bcrypt.hash(userData.password, 10);
 
@@ -60,7 +58,6 @@ module.exports = {
           resolve(data);
         })
         .catch((err) => {
-          console.log(err)
           // Reject with any error that occurred during user registration
           reject(err);
         });
@@ -272,7 +269,7 @@ module.exports = {
             email: user.email,
             address: user.address,
             phone: user.phone,
-            admin: user.admin
+            admin: user.admin,
           };
 
           // Resolve with the user data
@@ -289,7 +286,7 @@ module.exports = {
   },
 
   // Function to create booking details
-  createBookingDetails: ({ proId, userId }) => {
+  createBookingDetails: (userId, payment_intent, proId, status) => {
     return new Promise(async (resolve, reject) => {
       await Vehicle.updateOne(
         { _id: new ObjectId(proId) },
@@ -311,14 +308,16 @@ module.exports = {
                 {
                   _id: new ObjectId(proId),
                   booking_status: "PENDING",
-                  payment_status: true,
+                  payment: {
+                    status: status,
+                    intent_id: payment_intent,
+                  },
                 },
               ],
             },
           }
         )
           .then((res) => {
-            console.log(res);
             resolve("Vehicle booked successfully"); // Resolve with success message
           })
           .catch((err) => {
@@ -332,14 +331,16 @@ module.exports = {
             {
               _id: new ObjectId(proId), // Assign the product ID to the booking
               booking_status: "PENDING", //Set booking_status to PENDING indicating the booing is on process
-              payment_status: true, // Set payment_status to true indicating successful payment
+              payment: {
+                status: status,
+                intent_id: payment_intent,
+              }, // Set payment_status to true indicating successful payment
             },
           ],
         });
         // Save the booking instance to the database
         Booking.save(Booking)
           .then((res) => {
-            console.log(res);
             resolve("Vehicle booked successfully"); // Resolve with success message
           })
           .catch((err) => {
@@ -378,15 +379,13 @@ module.exports = {
             },
           },
         ]);
-        // console.log(bookedProducts)
-        // coVehiclensole.log(bookedProducts[0].bookings);
         const structureBookings = (bookedProducts) => {
           for (const bookingObject of bookedProducts) {
             // Iterate through the bookingList array
             let bkl = bookingObject.bookings.length - 1;
             for (let j = 0; j < bookingObject.bookings.length; j++) {
               // Find the corresponding booking in the bookings array by productId
-              bookingObject.bookings[bkl].bookingDetails =
+              bookingObject.bookings[bkl].bookingList =
                 bookingObject.bookingList[j];
               bkl = bkl - 1;
               // Create a new object combining product and booking details
@@ -398,18 +397,17 @@ module.exports = {
         const newArray = await structureBookings(bookedProducts);
         resolve(newArray[0].bookings);
       } catch (err) {
-        console.log(err);
         reject("Something went wrong on,collecting booking details");
       }
     });
   },
   sendCancelRequest: ({ userId, proId }) => {
-    console.log(userId, proId);
+    console.log(userId,proId)
     return new Promise(async (resolve, reject) => {
       BookingSchema.updateOne(
         {
-          userId:new ObjectId(userId), // The user's _id
-          "bookingList._id":new ObjectId(proId), // The specific booking's _id
+          userId: new ObjectId(userId), // The user's _id
+          "bookingList._id": new ObjectId(proId), // The specific booking's _id
         },
         {
           $set: {
@@ -417,14 +415,15 @@ module.exports = {
           },
         },
         {
-          arrayFilters: [{ "elem._id":new ObjectId(proId) }], // The specific booking's _id
+          arrayFilters: [{ "elem._id": new ObjectId(proId) }], // The specific booking's _id
         }
       )
         .then((res) => {
-          console.log(res);
+          console.log(res)
           resolve("Cancel request sended Successfully");
         })
         .catch((err) => {
+          console.log(err)
           reject("Something went wrong on sending cancel request");
         });
     });

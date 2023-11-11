@@ -19,15 +19,20 @@ const AcceptBookingBtn = ({ userId, vehicleId, booking_status }) => {
             });
         })
     }
-    const StatusSyle = {
+    const StatusStyle = {
         backgroundColor: '#D3D3D3'
     }
 
     return (
-        booking_status == "SUCCESS" || "REJECTED" ?
-            <button className='accept-btn' disabled style={StatusSyle}> ACCEPTED </button>
-            :
+        booking_status == "PENDING" ?
             <button className='accept-btn' onClick={BookingAcceptHandler}> ACCEPT </button>
+            :
+            booking_status == "SUCCESS"
+                ?
+                <button className='accept-btn' disabled > ACCEPTED </button>
+                :
+                <button className='accept-btn' disabled style={StatusStyle}> ACCEPT </button>
+
     )
 }
 

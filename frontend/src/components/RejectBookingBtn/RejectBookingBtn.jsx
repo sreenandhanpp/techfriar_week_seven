@@ -3,7 +3,7 @@ import './style.css'
 import axios from 'axios'
 import { URL } from '../../utils/url'
 import { toast } from 'react-toastify'
-const RejectBookingBtn = ({ booking_status,userId,vehicleId }) => {
+const RejectBookingBtn = ({ booking_status, userId, vehicleId }) => {
     const StatusSyle = {
         backgroundColor: '#D3D3D3'
     }
@@ -24,10 +24,14 @@ const RejectBookingBtn = ({ booking_status,userId,vehicleId }) => {
     }
 
     return (
-        booking_status == "SUCCESS" || "REJECTED" ?
-            <button className='reject-btn' disabled style={StatusSyle} > REJECT </button>
-            :
+        booking_status == "PENDING" ?
             <button className='reject-btn' onClick={RejectBookingHandler}> REJECT </button>
+            :
+            booking_status == "REJECTED"
+            ?
+            <button className='reject-btn' disabled > {booking_status} </button>
+            :
+            <button className='reject-btn' disabled style={StatusSyle} > REJECT </button>
     )
 }
 

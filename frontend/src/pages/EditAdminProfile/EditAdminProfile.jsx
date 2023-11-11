@@ -79,10 +79,9 @@ const EditAdminProfile = () => {
                 confirmPassword: formValues.confirmPassword,
                 pincode: formValues.pincode,
                 img_id: img_id,
-                image: formValues.image
-            }).then(res => {
-                console.log(res);
-                
+                image: formValues.image,
+                userId: userData.id
+            }).then(res => {                
                 // If signup is successful, dispatch a success action with user data
                     dispatch({ type: USER.SIGNUP_SUCCESS, payload: res.data });
 
@@ -148,7 +147,7 @@ const EditAdminProfile = () => {
                         <div className="ImgContainer">
                         </div>
                         <form id="Form">
-                            <h1 id="FormHeading">Sign Up</h1>
+                            <h1 id="FormHeading">Edit Profile</h1>
                             <div className="Name">
                                 <li><label>Full Name:</label>
                                     <input type="text" name='name' value={formValues.name} onChange={HandleChange} placeholder="Enter your Fullname" />
@@ -214,7 +213,7 @@ const EditAdminProfile = () => {
                                 <input type="file" name='images' onChange={handleImage} placeholder="select 4 images" />
                                 <Alert label={'images'} errors={err} />
                             </li>
-                            <button onClick={e => HandleSignup(e)} >Sign Up</button>
+                            <button onClick={e => HandleSignup(e)} >Update</button>
                         </form>
                     </div>
                 </div>

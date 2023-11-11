@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { getItem } from '../../../localStorage/getItem';
 import { Link } from 'react-router-dom';
+import Navbar from '../../components/Navbar/Navbar';
+import './style.css';
 
 const AdminProfile = () => {
     const userData = getItem('user');
@@ -14,11 +16,11 @@ const AdminProfile = () => {
         city: '',
         profile: '',
     });
-    const [url,setUrl] = useState('');
-   
+    const [url, setUrl] = useState('');
+
     useEffect(() => {
         if (userData) {
-            if(userData.profile_image){
+            if (userData.profile_image) {
                 setUrl(userData.profile_image.url);
             }
             setAdminDetails((prev) => {
@@ -37,18 +39,23 @@ const AdminProfile = () => {
         }
     }, [])
     return (
-        <div>
-            <h2>Name:{adminDetails.name} </h2>
-            <p>phone: {adminDetails.phone} </p>
-            <p>email: {adminDetails.email} </p>
-            <h4>Address</h4>
-            <p>country: {adminDetails.country} </p>
-            <p>state: {adminDetails.state} </p>
-            <p>city: {adminDetails.city} </p>
-            <p>pincode: {adminDetails.pincode} </p>
-            <img src={url} alt="" />
-            <Link to={'/edit-admin-profile'}> <button>Edit </button> </Link>
+        <>
+        <Navbar />
+        <div className="profile-wrapper">
+            <div class="profile-container">
+                <div class="profile-image">
+                    <img src={url} alt="Profile Image" />
+                </div>
+                <div class="profile-details">
+                    <h2> {adminDetails.name} </h2>
+                    <p>Email: {adminDetails.email}</p>
+                    <p>Phone: {adminDetails.phone}</p>
+                    <p>Address: {adminDetails.city},{adminDetails.state},{adminDetails.pincode},{adminDetails.country}</p>
+                    <Link to={'/edit-admin-profile'}> <button className='edit-button'>Edit </button> </Link>
+                </div>
+            </div>
         </div>
+        </>
     )
 }
 

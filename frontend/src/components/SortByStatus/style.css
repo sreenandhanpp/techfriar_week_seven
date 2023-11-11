@@ -1,0 +1,37 @@
+/* Style the custom-select container */
+.custom-select {
+  position: relative;
+  display: inline-block;
+}
+
+/* Style the custom-select select */
+.custom-select select {
+  display: inline-block;
+  padding: 5px 15px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  appearance: none; /* Remove default arrow in Firefox */
+  -webkit-appearance: none; /* Remove default arrow in Chrome, Safari, and Opera */
+}
+
+/* Style the custom-select arrow using a pseudo-element */
+.custom-select::after {
+  content: ""; /* Unicode character for down arrow */
+  position: absolute;
+  top: 50%;
+  right: 1px;
+  transform: translateY(-50%);  
+}
+
+/* Style the custom-select options */
+.custom-select select:focus {
+  outline: none;
+  border-color: #4caf50; /* Set a different border color on focus */
+}
+
+/* Optional: Style the custom-select options themselves */
+.custom-select select option {
+  padding: 10px;
+}

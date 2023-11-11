@@ -12,13 +12,14 @@ const express = require("express");
 const router = express.Router();
 const dotenv = require("dotenv");
 const commonHelper = require("../helpers/commonHelper");
+const checkIsBooked = require("../middlewares/checkIsBooked");
 
 dotenv.config();
 const stripe = require("stripe")(process.env.STRIPE_SECRET);
 
 // Handle user signup POST request
 router.post("/signup", signupValidator, (req, res) => {
-  // Validate the request body usingsk_test_51Nxt3ASBmaUds8nEWZf1vpUh7fDEEFbTcRrMXKWkEKmCEOdGbPJuQIPaCeybGPe4QSrR2EAPtsSdTJbbLcsp1PJ600EGhizYGQ the signupValidator middleware
+  // Validate the request body using the signupValidator middleware
   const err = validationResult(req);
 
   // If there are validation errors in the request data
@@ -179,47 +180,61 @@ router.post("/create-checkout-session", async (req, res) => {
   // Extract 'proId' and 'userId' from the request body
   const { proId, userId } = req.body;
 
-  // Fetch product details using 'commonHelper.getProduct'
-  commonHelper
-    .getProduct(proId)
-    .then(async (product) => {
-      console.log(product); // Log product details for debugging
-
-      // Create a checkout session using Stripe
-      const session = await stripe.checkout.sessions.create({
-        line_items: [
-          {
-            price_data: {
-              currency: "inr",
-              product_data: {
-                name: product.name,
-                images: [product.images[0].url],
+  const isBooked = await checkIsBooked(proId, userId);
+  if (!isBooked) {
+    // Fetch product details using 'commonHelper.getProduct'
+    commonHelper
+      .getProduct(proId)
+      .then(async (product) => {
+        // Create a checkout session using Stripe
+        stripe.checkout.sessions
+          .create({
+            line_items: [
+              {
+                price_data: {
+                  currency: "inr",
+                  product_data: {
+                    name: product.name,
+                    images: [product.images[0].url],
+                  },
+                  unit_amount: product.price * 1,
+                },
+                quantity: 1,
               },
-              unit_amount: product.price * 1,
-            },
-            quantity: 1,
-          },
-        ],
-        mode: "payment",
-        success_url: "http://localhost:5173/payment/success", // Set the success URL
-        cancel_url: "http://localhost:5173/payment/failed", // Set the cancel URL
-        payment_method_types: [
-          // Specify payment method types (e.g., card)
-          "card",
-        ],
-      });
-      console.log(session.payment_intent);
-      if (session.success_url) {
-        // Perform additional actions (e.g., create booking details) if the success URL is available
-        await userHelper.createBookingDetails(req.body);
-      }
+            ],
+            mode: "payment",
+            success_url: `http://localhost:5000/user/api/payment?userId=${userId}&proId=${proId}&payment_intent={CHECKOUT_SESSION_ID}`, // Set the success URL
+            cancel_url: "http://localhost:5000/user/api/payment", // Set the cancel URL
+            payment_method_types: [
+              // Specify payment method types (e.g., card)
+              "card",
+            ],
+          })
+          .then((session) => {
+            res.status(200).json({ url: session.url });
+          });
+        // Respond with the generated checkout session URL
+      })
+      .catch((err) => {});
+  } else {
+    res.status(201).json({ message: "You already booked this Vehicle" });
+  }
+});
 
-      // Respond with the generated checkout session URL
-      res.status(200).json({ url: session.url });
-    })
-    .catch((err) => {
-      console.log(err); // Log any errors that occur
-    });
+router.get("/payment", async (req, res) => {
+  const { userId, payment_intent, proId } = req.query;
+  let status = true; // Retrieve the Payment Intent ID from the query parameters
+  if (payment_intent) {
+    userHelper
+      .createBookingDetails(userId, payment_intent, proId, status)
+      .then((resp) => {
+        res.redirect("http://localhost:5173/payment/success");
+      });
+  } else {
+    res.redirect("http://localhost:5173/payment/failed");
+    // Handle the error
+  }
+  // You can render a success page or redirect the user to an appropriate page here
 });
 
 // Define a POST route for retrieving booked products
@@ -263,19 +278,5 @@ router.post("/cancel-request", (req, res) => {
       res.status(400).json({ message: err });
     });
 });
-
-// router.get("/payment/success", async (req, res) => {
-//   const { payment_intent } = req.query; // Retrieve the Payment Intent ID from the query parameters
-
-//   if (payment_intent) {
-//     console.log("Payment Intent ID: " + payment_intent);
-//     // Use payment_intent as needed
-//   } else {
-//     console.error("Payment Intent ID not found in query parameters.");
-//     // Handle the error
-//   }
-
-//   // You can render a success page or redirect the user to an appropriate page here
-// });
 
 module.exports = router;

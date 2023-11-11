@@ -1,0 +1,9 @@
+.accept-cancellation-btn {
+  width: fit-content;
+  border-radius: 5px;
+  padding: 2px 5px;
+  color: white;
+  border: none;
+  cursor: pointer;
+  background-color: rgb(238, 16, 16);
+}

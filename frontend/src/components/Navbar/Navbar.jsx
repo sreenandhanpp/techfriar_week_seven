@@ -2,8 +2,15 @@ import React, { useEffect, useState } from 'react';
 import './style.css';
 import { Link } from 'react-router-dom';
 import Logout from '../Logout/Logout';
+import { getItem } from '../../../localStorage/getItem';
 
 const Navbar = () => {
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    const userData = getItem('user');
+    setUser(userData)
+  }, [])
+
   return (
     <div>
       <nav className="navbar">
@@ -15,11 +22,13 @@ const Navbar = () => {
             <span className="line line3"></span>
           </div>
           <ul className="menu-items">
-            <li><Link>Cart</Link></li>
-            <li><Link to={'/booked-details'}>Bookings</Link></li>
+            <li><Link to={user?.admin ? '/all-booking-details' : '/booked-details'}>Bookings</Link></li>
+            <li><Link to={'/admin-profile'}>Profile</Link></li>
             <li><Link><Logout /></Link></li>
           </ul>
-          <h1 className="logo">Vehicles</h1>
+          <Link to={'/'}>
+            <h1 className="logo">Vehicles</h1>
+          </Link>
         </div>
       </nav>
     </div>

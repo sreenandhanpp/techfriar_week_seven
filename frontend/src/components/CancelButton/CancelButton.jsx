@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 const CancelButton = ({ status, HandelCancelRequest, vehicle }) => {
   const [disabled, setDisabled] = useState(false);
   let color;
-  if (status == 'CANCEL') {
+  if (status == 'CANCELLED') {
     color = '#D3D3D3'
     setDisabled(true)
   } else {
@@ -13,7 +13,7 @@ const CancelButton = ({ status, HandelCancelRequest, vehicle }) => {
     backgroundColor: color
   }
   return (
-    <button className='status-btn' disabled={disabled} onClick={() => HandelCancelRequest(vehicle._id)} style={StatusSyle}>{status ? status + "..." : "CANCEL"} </button>
+    <button className='cancel-btn' disabled={disabled} onClick={() => HandelCancelRequest(vehicle._id)} style={StatusSyle}>{status ? status + "..." : "CANCEL"} </button>
   )
 }
 

@@ -12,12 +12,20 @@ const Schema = new mongoose.Schema({
   bookingList: [
     {
       _id: {
-        type: ObjectId,
+        type: ObjectId,     
         ref: "vehicles",
       },
-      payment_status: {
-        type: Boolean,
-        required: true,
+      payment: {
+        status:{
+          type:Boolean,
+          required:true,
+        },
+        intent_id:{
+          type:String
+        },
+        refund_status:{
+          type:String
+        }
       },
       booking_status: {
         type: String,

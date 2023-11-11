@@ -23,6 +23,10 @@ const BookNow = () => {
                 // If a 'url' property exists in the response data, redirect the user to that URL
                 if (res.data.url) {
                     window.location.href = res.data.url;
+                } else {
+                    toast.warn(res.data.message, {
+                        position: toast.POSITION.BOTTOM_CENTER
+                    })
                 }
             })
             .catch(err => {

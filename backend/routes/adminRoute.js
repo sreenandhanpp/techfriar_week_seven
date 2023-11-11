@@ -37,7 +37,6 @@ router.post("/create-product", productValidator, (req, res) => {
                 res.status(200).json({ message: resp });
               })
               .catch((err) => {
-                console.log(err);
                 // Respond with a 400 (Bad Request) status and an error message if product creation fails
                 res.status(400).json({ message: err });
               });
@@ -139,7 +138,6 @@ router.post("/accept-booking", (req, res) => {
     });
 });
 router.post("/reject-booking", (req, res) => {
-  console.log(req.body);
   adminHelper
     .rejectBooking(req.body)
     .then((resp) => {
@@ -149,4 +147,16 @@ router.post("/reject-booking", (req, res) => {
       res.status(400).json({ message: err });
     });
 });
+
+router.post("/cancel-booking", (req, res) => {
+  adminHelper
+    .cancelBooking(req.body)
+    .then((resp) => {
+      res.status(200).json({ message: resp });
+    })
+    .catch((err) => {
+      res.status(400).json({ message: err });
+    });
+});
+
 module.exports = router;

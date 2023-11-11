@@ -33,7 +33,6 @@ module.exports = {
                     resolve(vehicle);
                 })
                 .catch(err => {
-                    console.log(err)
                     // Reject with an error message if there's an issue with retrieval
                     reject(err);
                 });
